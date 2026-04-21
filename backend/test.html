@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Socket Test</title>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+
+<script>
+  const socket = io("http://localhost:4000");
+
+  socket.on("connect", () => {
+    console.log("Connected:", socket.id);
+  });
+
+  socket.on("incident:new", (data) => {
+    console.log("New Incident:", data);
+  });
+  socket.on("incident:updated", (data) => {
+    console.log("Incident Updated:", data);
+  });
+</script>
+
+</body>
+</html>
