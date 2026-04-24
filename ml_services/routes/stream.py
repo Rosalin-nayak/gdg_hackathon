@@ -1,6 +1,7 @@
 from fastapi import APIRouter, WebSocket
 import numpy as np
 import cv2
+import websockets
 
 from models.yolo_loader import YOLOModel
 from detectors.behaviour import detect_behaviour

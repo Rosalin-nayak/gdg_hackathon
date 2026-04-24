@@ -57,7 +57,7 @@ class GestureModel:
     
     def detect(self,frame):
         rgb=cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
-        result=self.hands.proces(rgb)
+        result=self.hands.process(rgb)
         if not result.multi_hand_landmarks:
             return False
         for hand_landmarks in result.multi_hand_landmarks:
