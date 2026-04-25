@@ -10,6 +10,12 @@ app.use(express.json())
 const incidentRoutes = require('./routes/incidentsRoutes');
 app.use('/incidents', incidentRoutes);
 
+const cameraRoutes = require('./routes/cameraRoutes');
+app.use('/cameras', cameraRoutes);
+
+const responderRoutes = require('./routes/respondersRoutes');
+app.use('/responders', responderRoutes);
+
 app.post('/incidents', (req, res) => {
     const { title, description, location } = req.body
     console.log('Received incident:', { title, description, location })

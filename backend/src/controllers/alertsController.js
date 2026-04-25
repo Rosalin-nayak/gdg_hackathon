@@ -2,20 +2,33 @@ const incidentService = require('../services/incidentService');
 
 const createAlert = (req, res) => {
     try {
-        const io = req.app.get("io");
+        if (req.headers['x-service-key'] !== process.env.INTERNAL_SERVICE_KEY) {
+            return res.status(403).json({
+                success: false,
+                message: "Unauthorized"
+            });
+        }
         const { type, location, cameraId, confidence } = req.body;
-        const incidentData = {
-            type,
-            title: `${type} detected`,
-            description: `Camera: ${cameraId}, Confidence: ${confidence}`,
-            location
-        };
+        if (!cameraId) {
+            throw new Error("Camera ID required");
+        }
 
-        const incident = incidentService.createIncident(incidentData, io);
+        if (!type || !location) {
+            throw new Error("Type and location are required");
+        }
+
+        const incident = incidentService.createIncident({
+            type,
+            cameraId,
+            confidence,
+            location
+        });
+
         res.status(201).json({
             success: true,
             data: incident
         });
+
     } catch (error) {
         res.status(400).json({
             success: false,

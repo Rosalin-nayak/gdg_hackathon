@@ -1,23 +1,64 @@
-let incidents = [];
+const incidentService = require('../services/incidentService');
 
 const createIncident = (req, res) => {
-    const { title, description, location } = req.body;
-    if(!title || !location) {
-        return res.status(400).json({ message: 'Title and location are required' });
+    try {
+        const incident = incidentService.createIncident(req.body);
+        res.status(201).json({
+            success: true,
+            data: incident
+        });
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });
     }
-    const newIncident = { id: Date.now().toString(), 
-        title, 
-        description, 
-        location, status: 'pending', 
-        createdAt: new Date()
-    }
-    incidents.push(newIncident);
-    console.log('New incident created:', newIncident);
-    res.status(201).json(newIncident);
-}
+};
 
 const getIncidents = (req, res) => {
-    res.json(incidents);
-} 
+    const incidents = incidentService.getIncidents();
+    res.json({
+        success: true,
+        data: incidents
+    });
+};
 
-module.exports = { createIncident, getIncidents };
+const verifyIncident = (req, res) => {
+    try {
+        const incident = incidentService.verifyIncident(req.params.id);
+        res.json({
+            success: true,
+            data: incident
+        });
+    } catch (error) {
+        res.status(404).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+const resolveIncident = (req, res) => {
+    try {
+        const incident = incidentService.resolveIncident(req.params.id);
+        res.json({
+            success: true,
+            data: incident
+        });
+    } catch (error) {
+        res.status(404).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+const getIncidentStats = (req, res) => {
+    const stats = incidentService.getIncidentStats();
+    res.json({
+        success: true,
+        data: stats
+    });
+};
+
+module.exports = {createIncident, getIncidents, verifyIncident, resolveIncident, getIncidentStats};

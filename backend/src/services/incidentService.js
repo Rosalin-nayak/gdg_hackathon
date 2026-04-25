@@ -1,31 +1,41 @@
+const { emitNewIncident, emitUpdatedIncident } = require('../sockets/handlers/incidentHandler');
+const { assignResponder } = require('./dispatchService');
+
 let incidents = [];
 
-const createIncident = (data, io) => {
-    const {type, title, description, location} = data;
-
-    if (!type || !location) {
-        throw new Error("Type and location are required");
+const createIncident = (data) => {
+    const { type, cameraId, confidence, location } = data;
+    if (!type || !cameraId || !location) {
+        throw new Error("type, cameraId and location are required");
     }
-
     const newIncident = {
         id: Date.now().toString(),
         type,
-        title: title || `${type.toUpperCase()} detected`,
-        description: description || "",
-        location,
+        cameraId,
+        confidence: confidence || null,
+        location: {
+            zone: location.zone || location,
+            lat: location.lat || null,
+            lng: location.lng || null
+        },
         status: "detected",
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        assignedResponder: null
     };
-    incidents.push(newIncident);
 
-    console.log("Incident Created:", newIncident);
-    io.emit("incident:new", newIncident);
+    incidents.push(newIncident);
+    const responder = assignResponder(newIncident);
+    emitNewIncident(newIncident);
+
+    if (responder) {
+        emitUpdatedIncident(newIncident);
+    }
 
     return newIncident;
 };
 
-const verifyIncident = (id, io) => {
+const verifyIncident = (id) => {
     const incident = incidents.find(i => i.id === id);
 
     if (!incident) {
@@ -37,27 +47,38 @@ const verifyIncident = (id, io) => {
     incident.updatedAt = new Date();
 
     console.log("Incident Verified:", incident);
-    io.emit("incident:updated", incident);
+    emitUpdatedIncident(incident);
 
     return incident;
 };
 
-const resolveIncident = (id, io) => {
+const resolveIncident = (id) => {
     const incident = incidents.find(i => i.id === id);
 
     if (!incident) {
         throw new Error("Incident not found");
     }
+
     incident.status = "resolved";
     incident.resolvedAt = new Date();
     incident.updatedAt = new Date();
 
     console.log("Incident Resolved:", incident);
-    io.emit("incident:updated", incident);
-
+    emitUpdatedIncident(incident);
     return incident;
 };
 
-const getIncidents = () => {return incidents};
+const getIncidents = () => {
+    return incidents;
+};
 
-module.exports = {createIncident, verifyIncident, resolveIncident, getIncidents};
+const getIncidentStats = () => {
+    return {
+        total: incidents.length,
+        detected: incidents.filter(i => i.status === "detected").length,
+        verified: incidents.filter(i => i.status === "verified").length,
+        resolved: incidents.filter(i => i.status === "resolved").length
+    };
+};
+
+module.exports = {createIncident, verifyIncident, resolveIncident, getIncidents, getIncidentStats};
