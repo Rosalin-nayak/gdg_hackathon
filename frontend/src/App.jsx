@@ -1,18 +1,15 @@
-import Header from "./components/Dashboard/Header";
-import LeftPanel from "./components/Dashboard/LeftPanel";
-import CenterPanel from "./components/Dashboard/CenterPanel";
-import RightPanel from "./components/Dashboard/RightPanel";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import DashboardPage from './pages/DashboardPage';
 
 function App() {
   return (
-    <div className="app">
-      <Header />
-      <div className="main">
-        <LeftPanel />
-        <CenterPanel />
-        <RightPanel />
-      </div>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Navigate to="/dashboard" />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+      </Routes>
+    </Router>
   );
 }
 
