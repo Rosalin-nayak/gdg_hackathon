@@ -4,12 +4,26 @@ import cv2
 
 from models.yolo_loader import YOLOModel
 from detectors.behaviour import detect_behaviour
-from detectors.gesture import detect_gesture
-from detectors.pose_fall import detect_fall_pose
 from utils.notifier import send_alert
 
+try:
+    from detectors.gesture import detect_gesture
+except:
+    detect_gesture = None
+
+try:
+    from detectors.pose_fall import detect_fall_pose
+except:
+    detect_fall_pose = None
+
 router = APIRouter(prefix="/detect")
-yolo=YOLOModel()
+yolo = YOLOModel()
+
+CAMERA_LOCATIONS = {
+    "CAM_01": "Lobby",
+    "CAM_02": "Entrance",
+    "CAM_03": "Parking"
+}
 
 @router.post("/frame")
 async def detect_frame(file: UploadFile = File(...)):
@@ -24,18 +38,41 @@ async def detect_frame(file: UploadFile = File(...)):
         result = yolo.predict(frame)
 
         behaviour_alerts = detect_behaviour(result)
-        gesture_alerts = detect_gesture(frame)
-        pose_alerts = detect_fall_pose(frame)
+
+        gesture_alerts = []
+        if detect_gesture:
+            try:
+                gesture_alerts = detect_gesture(frame)
+            except:
+                gesture_alerts = []
+
+        pose_alerts = []
+        if detect_fall_pose:
+            try:
+                pose_alerts = detect_fall_pose(frame)
+            except:
+                pose_alerts = []
 
         alerts = list(set(behaviour_alerts + gesture_alerts + pose_alerts))
 
+        camera_id = "CAM_01"
+        location = CAMERA_LOCATIONS.get(camera_id, "Unknown")
+
+        mapping = {
+            "possible_fight": "violence",
+            "fall_detected": "fall",
+            "crowd": "crowd"
+        }
+
         for alert in alerts:
+            mapped_alert = mapping.get(alert, alert)
+
             send_alert({
-                "camera_id": "CAM_01",
-                "detection_type": alert,
+                "camera_id": camera_id,
+                "detection_type": mapped_alert,
                 "confidence": 0.9,
                 "location": {
-                    "zone": "Lobby"
+                "zone": location
                 }
             })
 
