@@ -15,29 +15,34 @@ yolo=YOLOModel()
 async def detect_frame(file: UploadFile = File(...)):
     try:
         contents = await file.read()
-        print("File received")
         np_arr = np.frombuffer(contents, np.uint8)
         frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
         if frame is None:
             return {"error": "Invalid image"}
-        
-        print("Frame shape:", frame.shape)
 
         result = yolo.predict(frame)
-        print("YOLO done")
 
-        behaviour_alerts=detect_behaviour(result)
-        print("Behaviour alerts:",behaviour_alerts)
-        gesture_alerts=detect_gesture(frame)
-        print("Gesture alerts:",gesture_alerts)
-        pose_alerts=detect_fall_pose(frame)
-        print("Pose alerts:",pose_alerts)
+        behaviour_alerts = detect_behaviour(result)
+        gesture_alerts = detect_gesture(frame)
+        pose_alerts = detect_fall_pose(frame)
 
-        alerts=behaviour_alerts+gesture_alerts+pose_alerts
-        # if alerts:
-            # send_alert({"alerts":alerts})
-        return {"alerts":alerts}
+        alerts = list(set(behaviour_alerts + gesture_alerts + pose_alerts))
+
+        for alert in alerts:
+            send_alert({
+                "camera_id": "CAM_01",
+                "detection_type": alert,
+                "confidence": 0.9,
+                "location": {
+                    "zone": "Lobby"
+                }
+            })
+
+        return {
+            "success": True,
+            "alerts": alerts
+        }
 
     except Exception as e:
         print("ERROR:", str(e))

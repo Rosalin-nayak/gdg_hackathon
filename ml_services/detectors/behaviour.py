@@ -1,7 +1,9 @@
-import numpy as np
 from collections import deque
+import time
 
 FRAME_HISTORY = deque(maxlen=5)
+LAST_ALERT = {}
+COOLDOWN = 5
 PERSON_CLASS = 0
 
 def compute_iou(box1, box2):
@@ -23,7 +25,6 @@ def detect_behaviour(yolo_result):
     alerts = []
     current_boxes = []
 
-    # Extract persons
     for box in yolo_result.boxes:
         cls = int(box.cls[0])
         conf = float(box.conf[0])
@@ -35,7 +36,7 @@ def detect_behaviour(yolo_result):
     FRAME_HISTORY.append(current_boxes)
 
     if len(current_boxes) >= 5:
-        alerts.append("crowd_detected")
+        alerts.append("crowd")
 
     overlaps = 0
     for i in range(len(current_boxes)):
@@ -44,11 +45,10 @@ def detect_behaviour(yolo_result):
                 overlaps += 1
 
     if overlaps >= 2:
-        alerts.append("possible_fight")
+        alerts.append("violence")
 
     if len(FRAME_HISTORY) >= 2:
         prev_boxes = FRAME_HISTORY[-2]
-
         fall_candidates = 0
 
         for curr in current_boxes:
@@ -62,10 +62,8 @@ def detect_behaviour(yolo_result):
 
             if best_prev is None:
                 continue
-            cx_curr = (curr[0] + curr[2]) / 2
-            cy_curr = (curr[1] + curr[3]) / 2
 
-            cx_prev = (best_prev[0] + best_prev[2]) / 2
+            cy_curr = (curr[1] + curr[3]) / 2
             cy_prev = (best_prev[1] + best_prev[3]) / 2
 
             dy = cy_curr - cy_prev
@@ -74,12 +72,10 @@ def detect_behaviour(yolo_result):
             h = curr[3] - curr[1]
             aspect_ratio = w / h if h != 0 else 0
 
-            is_lying = aspect_ratio > 1.5
-
-            if dy > 40 and is_lying:
+            if dy > 40 and aspect_ratio > 1.5:
                 fall_candidates += 1
 
         if fall_candidates > 0:
-            alerts.append("fall_detected")
+            alerts.append("collapse")
 
     return list(set(alerts))
