@@ -1,16 +1,11 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import DashboardPage from './pages/DashboardPage';
+import DashboardPage from './pages/DashboardPage'
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-      </Routes>
-    </Router>
-  );
+    <div className="h-screen w-screen bg-[#0b1120]">
+      <DashboardPage />
+    </div>
+  )
 }
 
-export default App;
+export default App

@@ -1,316 +1,186 @@
-import React from 'react';
-import { 
-  ShieldAlert, UserCheck, Search, Activity, PhoneCall, 
-  MapPin, CheckCircle, Navigation, MessageSquare, Zap, 
-  AlertTriangle, Eye, ArrowRight, Mic, Hand
-} from 'lucide-react';
-import './Dashboard.css';
+import React from 'react'
+import { Shield, Activity, Settings, CheckCircle, Menu } from 'lucide-react'
+import CameraGrid from '../components/Cameras/CameraGrid'
+import CameraFeed from '../components/Cameras/CameraFeed'
+import SOSButton from '../components/SOS/SOSButton'
+import StatsBar from '../components/Dashboard/StatsBar'
+import ResponderList from '../components/Responders/ResponderList'
+import MapView from '../components/Dashboard/MapView'
+import { useIncidentStore } from '../store/incidentStore'
 
-const DashboardPage = () => {
+export default function DashboardPage() {
+  const { confidences, verifications, triggerManualSOS, pipelineActive } = useIncidentStore()
+
+  // Helper to determine node active state
+  const getNodeClass = (index, baseColor) => {
+    if (index === pipelineActive) return `border-${baseColor}-400 bg-${baseColor}-500/20 shadow-[0_0_15px_rgba(var(--${baseColor}-rgb),0.3)] scale-105`
+    if (index < pipelineActive) return `border-${baseColor}-500/50 bg-${baseColor}-500/10 opacity-70`
+    return 'border-slate-700 bg-slate-800/30 opacity-50 grayscale'
+  }
+
   return (
-    <div className="dashboard-container">
+    <div className="flex flex-col min-h-screen w-full bg-[#0b1120] text-slate-300 p-2 sm:p-4 font-sans relative">
+      
       {/* Header */}
-      <header className="dashboard-header">
-        <div className="header-left">
-          <div className="logo-icon">
-            <ShieldAlert size={24} />
+      <header className="flex flex-wrap gap-4 items-center justify-between mb-4 px-2 w-full">
+        <div className="flex items-center gap-3">
+          <div className="bg-[#f97316] p-2 rounded-lg shrink-0">
+            <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
-          <div className="header-title">
-            <h1>Sentinel</h1>
-            <p>AI-POWERED SILENT DISTRESS DETECTION</p>
+          <div>
+            <h1 className="text-lg sm:text-xl font-bold text-white tracking-wide">Sentinel</h1>
+            <p className="text-[9px] sm:text-[10px] text-slate-400 font-semibold tracking-widest uppercase hidden sm:block">AI-Powered Silent Distress Detection</p>
           </div>
         </div>
         
-        <div className="header-nav">
-          <div className="nav-item active">Overview</div>
-          <div className="nav-item">Analytics</div>
-          <div className="nav-item">Settings</div>
-        </div>
-        
-        <div className="header-status">
-          <div className="status-dot"></div>
-          System Active
+        <div className="flex items-center gap-2 sm:gap-4 ml-auto">
+          <div className="hidden md:flex bg-[#141d2e] rounded-full p-1 border border-slate-700">
+            <button className="px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-slate-700/50 text-white text-xs sm:text-sm font-medium">Overview</button>
+            <button className="px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-slate-400 hover:text-white text-xs sm:text-sm font-medium transition-colors">Analytics</button>
+            <button className="px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-slate-400 hover:text-white text-xs sm:text-sm font-medium transition-colors">Settings</button>
+          </div>
+          <div className="flex items-center gap-2 bg-[#112a1f] border border-green-800/50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full">
+            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)] animate-pulse shrink-0"></div>
+            <span className="text-green-400 text-[10px] sm:text-xs font-semibold uppercase tracking-wider whitespace-nowrap">System Active</span>
+          </div>
+          <button className="md:hidden p-2 bg-slate-800 rounded text-slate-300 hover:text-white"><Menu size={20}/></button>
         </div>
       </header>
 
-      {/* Main Content Grid */}
-      <div className="dashboard-content">
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 w-full">
         
-        {/* Left Column */}
-        <div className="col-left">
-          {/* CCTV Feeds */}
-          <div className="panel">
-            <div className="panel-header">CCTV FEEDS</div>
-            <div className="cctv-grid">
-              <div className="cctv-feed alert">
-                <div className="cctv-label">CAM-01 • Lobby</div>
-                <Activity size={32} color="#ef4444" />
-              </div>
-              <div className="cctv-feed">
-                <div className="cctv-label">CAM-02 • Parking</div>
-                <UserCheck size={32} color="#3b82f6" />
-              </div>
-              <div className="cctv-feed">
-                <div className="cctv-label">CAM-03 • Exit</div>
-                <div className="grid-lines" />
-              </div>
-              <div className="cctv-feed">
-                <div className="cctv-label">CAM-04 • Stairway</div>
-                <div className="crosshair" />
-              </div>
-            </div>
-          </div>
-
-          {/* Silent SOS Triggers */}
-          <div className="panel flex-1">
-            <div className="panel-header">SILENT SOS TRIGGERS</div>
-            
-            <div className="trigger-item active">
-              <div className="flex items-center">
-                <div className="trigger-icon"><Zap size={20} color="#ef4444" /></div>
-                <div className="trigger-info">
-                  <h4>Power Button ×3</h4>
-                  <p>Press 3 times rapidly</p>
-                </div>
-              </div>
-              <div className="trigger-count red">3</div>
-            </div>
-
-            <div className="trigger-item">
-              <div className="flex items-center">
-                <div className="trigger-icon"><Hand size={20} color="#f97316" /></div>
-                <div className="trigger-info">
-                  <h4>Hand Gesture</h4>
-                  <p>Detected via CCTV AI</p>
-                </div>
-              </div>
-              <div className="trigger-count orange">1</div>
-            </div>
-
-            <div className="trigger-item">
-              <div className="flex items-center">
-                <div className="trigger-icon"><Mic size={20} color="#94a3b8" /></div>
-                <div className="trigger-info">
-                  <h4>Whisper "Help"</h4>
-                  <p>Audio keyword detected</p>
-                </div>
-              </div>
-              <div className="trigger-count">0</div>
-            </div>
-          </div>
+        {/* Left Column (3) */}
+        <div className="col-span-1 lg:col-span-3 flex flex-col gap-4">
+          <CameraGrid />
+          <SOSButton />
         </div>
 
-        {/* Center Column */}
-        <div className="col-center">
-          {/* Detection Pipeline */}
-          <div className="panel">
-            <div className="panel-header">DETECTION PIPELINE</div>
-            <div className="pipeline-container">
-              <div className="pipeline-step red">
-                <Search size={20} className="step-icon" color="#ef4444" />
-                <h4>AI Distress<br/>Detection</h4>
-                <p>Violence • Chasing<br/>Fall</p>
-              </div>
-              <ArrowRight size={16} className="pipeline-arrow" />
-              <div className="pipeline-step orange">
-                <AlertTriangle size={20} className="step-icon" color="#f97316" />
-                <h4>Silent SOS</h4>
-                <p>Button • Gesture<br/>Voice</p>
-              </div>
-              <ArrowRight size={16} className="pipeline-arrow" />
-              <div className="pipeline-step orange">
-                <Eye size={20} className="step-icon" color="#f97316" />
-                <h4>Smart Verify</h4>
-                <p>Dashboard • Human<br/>review</p>
-              </div>
-              <ArrowRight size={16} className="pipeline-arrow" />
-              <div className="pipeline-step green">
-                <MapPin size={20} className="step-icon" color="#22c55e" />
-                <h4>Respond</h4>
-                <p>Live map • Assign</p>
-              </div>
-              <ArrowRight size={16} className="pipeline-arrow" />
-              <div className="pipeline-step blue">
-                <PhoneCall size={20} className="step-icon" color="#3b82f6" />
-                <h4>Alert</h4>
-                <p>App • SMS • Email</p>
-              </div>
-            </div>
+        {/* Center Column (6) */}
+        <div className="col-span-1 lg:col-span-6 flex flex-col gap-4">
+          
+          {/* Top pipeline */}
+          <div className="panel p-4 overflow-x-auto">
+             <div className="panel-header mb-2">Detection Pipeline</div>
+             {/* Pipeline visual */}
+             <div className="flex flex-row justify-between items-center min-w-[500px]">
+               {/* Node 1 */}
+               <div className={`flex flex-col items-center border p-3 rounded-lg w-[22%] transition-all ${getNodeClass(0, 'red')}`}>
+                 <div className={`${pipelineActive >= 0 ? 'text-red-400' : 'text-slate-500'} mb-1`}><Shield size={18}/></div>
+                 <div className="text-[10px] sm:text-xs font-bold text-white text-center leading-tight">AI Distress<br/>Detection</div>
+                 <div className="text-[8px] sm:text-[9px] text-slate-400 mt-1 text-center hidden sm:block">Violence - Chasing - Fall</div>
+               </div>
+               <div className={`flex-1 h-px mx-2 relative transition-colors ${pipelineActive >= 1 ? 'bg-red-500/50' : 'bg-slate-700'}`}><div className={`absolute right-0 top-[-3px] border-[3px] border-transparent transition-colors ${pipelineActive >= 1 ? 'border-l-red-500/50' : 'border-l-slate-700'}`}></div></div>
+               
+               {/* Node 2 */}
+               <div className={`flex flex-col items-center border p-3 rounded-lg w-[22%] transition-all ${getNodeClass(1, 'orange')}`}>
+                 <div className={`${pipelineActive >= 1 ? 'text-orange-400' : 'text-slate-500'} mb-1`}><Activity size={18}/></div>
+                 <div className="text-[10px] sm:text-xs font-bold text-white text-center leading-tight">Silent SOS</div>
+                 <div className="text-[8px] sm:text-[9px] text-slate-400 mt-1 text-center hidden sm:block">Button - Gesture - Voice</div>
+               </div>
+               <div className={`flex-1 h-px mx-2 relative transition-colors ${pipelineActive >= 2 ? 'bg-orange-500/50' : 'bg-slate-700'}`}><div className={`absolute right-0 top-[-3px] border-[3px] border-transparent transition-colors ${pipelineActive >= 2 ? 'border-l-orange-500/50' : 'border-l-slate-700'}`}></div></div>
+               
+               {/* Node 3 */}
+               <div className={`flex flex-col items-center border p-3 rounded-lg w-[22%] transition-all ${getNodeClass(2, 'yellow')}`}>
+                 <div className={`${pipelineActive >= 2 ? 'text-yellow-400' : 'text-slate-500'} mb-1`}><Settings size={18}/></div>
+                 <div className="text-[10px] sm:text-xs font-bold text-white text-center leading-tight">Smart Verify</div>
+                 <div className="text-[8px] sm:text-[9px] text-slate-400 mt-1 text-center hidden sm:block">Dashboard - Human review</div>
+               </div>
+               <div className={`flex-1 h-px mx-2 relative transition-colors ${pipelineActive >= 3 ? 'bg-yellow-500/50' : 'bg-slate-700'}`}><div className={`absolute right-0 top-[-3px] border-[3px] border-transparent transition-colors ${pipelineActive >= 3 ? 'border-l-yellow-500/50' : 'border-l-slate-700'}`}></div></div>
+               
+               {/* Node 4 */}
+               <div className={`flex flex-col items-center border p-3 rounded-lg w-[22%] transition-all ${getNodeClass(3, 'green')}`}>
+                 <div className={`${pipelineActive >= 3 ? 'text-green-400' : 'text-slate-500'} mb-1`}><CheckCircle size={18}/></div>
+                 <div className="text-[10px] sm:text-xs font-bold text-white text-center leading-tight">Respond</div>
+                 <div className="text-[8px] sm:text-[9px] text-slate-400 mt-1 text-center hidden sm:block">Live map - Assign</div>
+               </div>
+             </div>
           </div>
 
-          <div className="center-middle">
-            {/* AI Confidence */}
-            <div className="panel confidence-bars">
-              <div className="panel-header">AI CONFIDENCE</div>
-              <div className="bar-row">
-                <div className="bar-label">Violence</div>
-                <div className="bar-track"><div className="bar-fill" style={{width: '87%', background: '#f97316'}}></div></div>
-                <div className="bar-value">87%</div>
-              </div>
-              <div className="bar-row">
-                <div className="bar-label">Chasing</div>
-                <div className="bar-track"><div className="bar-fill" style={{width: '72%', background: '#f97316'}}></div></div>
-                <div className="bar-value">72%</div>
-              </div>
-              <div className="bar-row">
-                <div className="bar-label">Fall/Collapse</div>
-                <div className="bar-track"><div className="bar-fill" style={{width: '44%', background: '#3b82f6'}}></div></div>
-                <div className="bar-value">44%</div>
-              </div>
-            </div>
+          {/* AI Confidence & Smart Verify row */}
+          <div className="flex flex-col sm:flex-row gap-4">
+             <div className="panel p-4 flex-1">
+               <div className="panel-header">AI Confidence</div>
+               <div className="space-y-3 mt-3">
+                 <div>
+                   <div className="flex justify-between text-xs mb-1"><span>Violence</span><span className="text-white font-mono">{confidences.violence}%</span></div>
+                   <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                     <div className="h-full bg-orange-500 rounded-full transition-all duration-1000" style={{ width: `${confidences.violence}%` }}></div>
+                   </div>
+                 </div>
+                 <div>
+                   <div className="flex justify-between text-xs mb-1"><span>Chasing</span><span className="text-white font-mono">{confidences.chasing}%</span></div>
+                   <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                     <div className="h-full bg-orange-500/70 rounded-full transition-all duration-1000" style={{ width: `${confidences.chasing}%` }}></div>
+                   </div>
+                 </div>
+                 <div>
+                   <div className="flex justify-between text-xs mb-1"><span>Fall/Collapse</span><span className="text-white font-mono">{confidences.fall}%</span></div>
+                   <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                     <div className="h-full bg-blue-500 rounded-full transition-all duration-1000" style={{ width: `${confidences.fall}%` }}></div>
+                   </div>
+                 </div>
+               </div>
+             </div>
 
-            {/* Smart Verification */}
-            <div className="panel smart-verification">
-              <div className="panel-header">SMART VERIFICATION</div>
-              <div className="verify-stats">
-                <div className="verify-stat red">
-                  <h3>3</h3>
-                  <p>Pending Review</p>
-                </div>
-                <div className="verify-stat green">
-                  <h3>12</h3>
-                  <p>Confirmed Safe</p>
-                </div>
-              </div>
-              <button className="sos-trigger-btn">
-                <Zap size={16} /> TRIGGER SILENT SOS
-              </button>
-            </div>
+             <div className="panel p-4 sm:w-[280px] flex flex-col justify-between">
+               <div className="panel-header">Smart Verification</div>
+               <div className="grid grid-cols-2 gap-2 mt-2">
+                 <div className="bg-slate-800/50 rounded p-2 text-center border border-slate-700">
+                   <div className="text-xl font-bold text-red-400 transition-all">{verifications.pending}</div>
+                   <div className="text-[9px] sm:text-[10px] text-slate-400 uppercase">Pending Review</div>
+                 </div>
+                 <div className="bg-green-900/20 rounded p-2 text-center border border-green-800/30">
+                   <div className="text-xl font-bold text-green-400">{verifications.confirmedSafe}</div>
+                   <div className="text-[9px] sm:text-[10px] text-green-500 uppercase">Confirmed Safe</div>
+                 </div>
+               </div>
+               <button 
+                 onClick={triggerManualSOS}
+                 className="w-full mt-4 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-sm py-2 sm:py-3 rounded shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2"
+               >
+                 <span className="animate-pulse">⚡</span> Trigger Silent SOS
+               </button>
+             </div>
           </div>
 
-          {/* Real-Time Response Map */}
-          <div className="panel flex-1">
-            <div className="flex justify-between items-center mb-2">
-              <div className="panel-header" style={{margin:0}}>Real-Time Response Map</div>
-              <div style={{fontSize: 12, color: '#22c55e'}}>● 2 responders active</div>
-            </div>
-            <div className="map-container">
-              <div className="map-grid"></div>
-              {/* Mock Map Elements */}
-              <div style={{position:'absolute', top:'30%', left:'30%', padding:'10px', border:'1px solid #3b82f6', color:'#3b82f6', fontSize:10}}>C1</div>
-              <div style={{position:'absolute', top:'40%', left:'35%', background:'rgba(239, 68, 68, 0.2)', border:'1px solid #ef4444', borderRadius:'50%', width:'30px', height:'30px', display:'flex', alignItems:'center', justifyContent:'center'}}><div style={{width:8,height:8,background:'#ef4444',borderRadius:'50%'}}></div></div>
-              <div style={{position:'absolute', top:'50%', left:'45%', width:16,height:16,background:'#22c55e',color:'white',fontSize:10,display:'flex',alignItems:'center',justifyContent:'center',borderRadius:2}}>A</div>
-              <div style={{position:'absolute', top:'60%', left:'40%', width:16,height:16,background:'#22c55e',color:'white',fontSize:10,display:'flex',alignItems:'center',justifyContent:'center',borderRadius:2}}>B</div>
-              <div style={{position:'absolute', top:'30%', left:'55%', padding:'10px 40px', border:'1px solid #3b82f6', color:'#3b82f6', fontSize:10}}>Office</div>
-              <div style={{position:'absolute', top:'30%', right:'10%', padding:'10px 20px', border:'1px solid #3b82f6', color:'#3b82f6', fontSize:10}}>C2 Parking</div>
-            </div>
-          </div>
+          <MapView />
         </div>
 
-        {/* Right Column */}
-        <div className="col-right">
-          {/* Stats */}
-          <div className="panel">
-            <div className="panel-header">TODAY'S STATS</div>
-            <div className="stats-grid">
-              <div className="stat-card red">
-                <h3>4</h3>
-                <p>Incidents</p>
-                <div className="sub-text" style={{color:'#ef4444'}}>▲ 2 from avg</div>
-              </div>
-              <div className="stat-card green">
-                <h3>98%</h3>
-                <p>Uptime</p>
-                <div className="sub-text" style={{color:'#22c55e'}}>● Nominal</div>
-              </div>
-              <div className="stat-card">
-                <h3>1.8s</h3>
-                <p>Avg Detect</p>
-                <div className="sub-text" style={{color:'#22c55e'}}>● Fast</div>
-              </div>
-              <div className="stat-card">
-                <h3>12</h3>
-                <p>Cameras</p>
-                <div className="sub-text" style={{color:'#22c55e'}}>● All live</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Security Team */}
-          <div className="panel">
-            <div className="panel-header">Security Team & Dispatch</div>
-            <div className="team-list">
-              <div className="team-member">
-                <div className="member-info">
-                  <div className="avatar orange">JD</div>
-                  <div className="member-details">
-                    <h4>J. Davis</h4>
-                    <p>Unit Alpha - Lobby</p>
-                  </div>
-                </div>
-                <div className="member-status red">En-route</div>
-              </div>
-              <div className="team-member">
-                <div className="member-info">
-                  <div className="avatar green">MB</div>
-                  <div className="member-details">
-                    <h4>M. Brown</h4>
-                    <p>Unit Bravo - Floor 2</p>
-                  </div>
-                </div>
-                <div className="member-status green">Available</div>
-              </div>
-              <div className="team-member">
-                <div className="member-info">
-                  <div className="avatar purple">SR</div>
-                  <div className="member-details">
-                    <h4>S. Reyes</h4>
-                    <p>Emergency Dispatch</p>
-                  </div>
-                </div>
-                <div className="member-status red">Active call</div>
-              </div>
-              <div className="team-member">
-                <div className="member-info">
-                  <div className="avatar" style={{background:'#3b82f6'}}>KL</div>
-                  <div className="member-details">
-                    <h4>K. Lee</h4>
-                    <p>Control Room</p>
-                  </div>
-                </div>
-                <div className="member-status green">Available</div>
-              </div>
-            </div>
-          </div>
-
+        {/* Right Column (3) */}
+        <div className="col-span-1 lg:col-span-3 flex flex-col gap-4">
+          <StatsBar />
+          <ResponderList />
+          
           {/* Multi-Channel Alerts */}
-          <div className="panel flex-1">
-            <div className="panel-header">MULTI-CHANNEL ALERTS</div>
-            <div className="alert-list">
-              <div className="alert-item">
-                <div className="alert-info">
-                  <MessageSquare size={16} color="#3b82f6" />
-                  App Alert
-                </div>
-                <div className="alert-status green">✓ Sent</div>
-              </div>
-              <div className="alert-item">
-                <div className="alert-info">
-                  <MessageSquare size={16} color="#8b5cf6" />
-                  SMS Alert
-                </div>
-                <div className="alert-status green">✓ Sent</div>
-              </div>
-              <div className="alert-item">
-                <div className="alert-info">
-                  <MessageSquare size={16} color="#f97316" />
-                  Email Alert
-                </div>
-                <div className="alert-status orange">Queued</div>
-              </div>
-              <div className="alert-item">
-                <div className="alert-info">
-                  <PhoneCall size={16} color="#ef4444" />
-                  Emergency Dispatch
-                </div>
-                <div className="alert-status green">✓ Notified</div>
-              </div>
-            </div>
+          <div className="panel p-4 flex-1 mb-4 lg:mb-0">
+             <div className="panel-header">Multi-Channel Alerts</div>
+             <div className="space-y-2 mt-3">
+               <div className="flex justify-between items-center p-2 rounded bg-slate-800/30 border border-slate-700/50">
+                 <div className="flex items-center gap-2"><div className="bg-blue-500/20 p-1.5 rounded text-blue-400"><Shield size={14}/></div><span className="text-sm">App Alert</span></div>
+                 <span className="text-xs text-green-400 flex items-center gap-1">✓ Sent</span>
+               </div>
+               <div className="flex justify-between items-center p-2 rounded bg-slate-800/30 border border-slate-700/50">
+                 <div className="flex items-center gap-2"><div className="bg-green-500/20 p-1.5 rounded text-green-400"><Shield size={14}/></div><span className="text-sm">SMS Alert</span></div>
+                 <span className="text-xs text-green-400 flex items-center gap-1">✓ Sent</span>
+               </div>
+               <div className="flex justify-between items-center p-2 rounded bg-slate-800/30 border border-slate-700/50">
+                 <div className="flex items-center gap-2"><div className="bg-yellow-500/20 p-1.5 rounded text-yellow-400"><Shield size={14}/></div><span className="text-sm">Email Alert</span></div>
+                 <span className="text-xs text-yellow-400">Queued</span>
+               </div>
+               <div className="flex justify-between items-center p-2 rounded bg-red-900/20 border border-red-800/30 mt-4">
+                 <div className="flex items-center gap-2"><div className="bg-red-500/20 p-1.5 rounded text-red-400 animate-pulse"><Shield size={14}/></div><span className="text-sm text-red-200">Emergency Dispatch</span></div>
+                 <span className="text-xs text-orange-400 font-bold">✓ Notified</span>
+               </div>
+             </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
-};
 
-export default DashboardPage;
+      </div>
+
+      {/* Camera Feed Modal */}
+      <CameraFeed />
+
+    </div>
+  )
+}

@@ -1,70 +1,23 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --bg-color: #0b1120;
-  --panel-bg: rgba(17, 24, 39, 0.7);
-  --panel-border: #1e293b;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --accent-orange: #f97316;
-  --accent-red: #ef4444;
-  --accent-blue: #3b82f6;
-  --accent-green: #22c55e;
-  
-  --font-family: 'Inter', sans-serif;
+@layer components {
+  .panel {
+    @apply bg-[#111827]/80 backdrop-blur-sm border border-slate-700/50 rounded-xl overflow-hidden shadow-lg;
+  }
+  .panel-header {
+    @apply text-xs font-semibold text-slate-400 tracking-wider uppercase mb-3 px-1;
+  }
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: var(--font-family);
-  background-color: var(--bg-color);
-  color: var(--text-main);
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-/* Glassmorphism Panel */
-.panel {
-  background-color: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  border-radius: 8px;
-  padding: 16px;
-  backdrop-filter: blur(10px);
-}
-
-.panel-header {
-  font-size: 12px;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  letter-spacing: 1px;
-  margin-bottom: 12px;
-  font-weight: 600;
-}
-
-/* Utilities */
-.flex { display: flex; }
-.flex-col { display: flex; flex-direction: column; }
-.items-center { align-items: center; }
-.justify-between { justify-content: space-between; }
-.justify-center { justify-content: center; }
-.gap-2 { gap: 8px; }
-.gap-4 { gap: 16px; }
-.gap-6 { gap: 24px; }
-.w-full { width: 100%; }
-.h-full { height: 100%; }
-
-/* Scrollbar */
+/* Custom scrollbar for webkit */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg-color); 
+  background: transparent; 
 }
 ::-webkit-scrollbar-thumb {
   background: #334155; 
