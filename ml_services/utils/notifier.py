@@ -1,6 +1,8 @@
 import requests
+import os
 
-BACKEND_URL = "http://localhost:4000/alerts"
+BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:4000/alerts")
+SERVICE_KEY = os.getenv("SERVICE_KEY")
 
 def send_alert(event: dict):
     try:
@@ -11,7 +13,21 @@ def send_alert(event: dict):
             "location": event.get("location")
         }
 
-        requests.post(BACKEND_URL, json=payload, timeout=2)
+        headers = {
+            "x-service-key": SERVICE_KEY
+        }
+
+        print("Sending payload:", payload)
+
+        res = requests.post(
+            BACKEND_URL,
+            json=payload,
+            headers=headers,
+            timeout=2
+        )
+
+        print("Response status:", res.status_code)
+        print("Response body:", res.text)
 
     except Exception as e:
         print("Notifier error:", e)
