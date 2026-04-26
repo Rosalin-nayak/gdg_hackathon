@@ -1,4 +1,5 @@
-import React from 'react';
+import React,{useEffect,useState} from 'react';
+import {getIncidents} from '../api';
 import { 
   ShieldAlert, UserCheck, Search, Activity, PhoneCall, 
   MapPin, CheckCircle, Navigation, MessageSquare, Zap, 
@@ -7,6 +8,20 @@ import {
 import './Dashboard.css';
 
 const DashboardPage = () => {
+  const[incidents,setIncidents]=useState([]);
+
+  useEffect(() => {
+    getIncidents()
+      .then(data => {
+        console.log("API SUCCESS:", data);
+        setIncidents(data);
+      })
+      .catch(err => {
+        console.error("API ERROR:", err);
+      });
+    }, []);
+    
+
   return (
     <div className="dashboard-container">
       {/* Header */}
