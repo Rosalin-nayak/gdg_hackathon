@@ -53,7 +53,8 @@ async def detect_frame(file: UploadFile = File(...)):
             except:
                 pose_alerts = []
 
-        alerts = list(set(behaviour_alerts + gesture_alerts + pose_alerts))
+        # alerts = list(set(behaviour_alerts + gesture_alerts + pose_alerts))
+        alerts=["fall detected"]
 
         camera_id = "CAM_01"
         location = CAMERA_LOCATIONS.get(camera_id, "Unknown")
