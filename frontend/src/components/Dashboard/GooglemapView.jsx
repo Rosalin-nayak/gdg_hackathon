@@ -17,7 +17,7 @@ export default function GoogleMapView({ incidents = [] }) {
     <div className="panel p-4">
       <div className="panel-header mb-2">Google Map (Live Alerts)</div>
 
-      <LoadScript googleMapsApiKey="AIzaSyB1m-FlWXWC5a5-JPE1XGyio-eNYq5pwWc">
+      <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
         <GoogleMap
           mapContainerStyle={containerStyle}
           center={defaultCenter}
