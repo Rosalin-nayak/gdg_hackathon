@@ -1,4 +1,3 @@
-
 console.log("APP.JS LOADED");
 require("dotenv").config();
 const express = require("express");
@@ -6,14 +5,20 @@ const cors = require("cors");
 const http = require("http");
 const multer = require("multer");
 const fetch = require("node-fetch");
-const FormData=require("form-data");
+const FormData = require("form-data");
 
 const upload = multer();
 
 const app = express();
 const server = http.createServer(app);
 
-app.use(cors());
+const ML_URL = process.env.ML_URL || "http://localhost:8000";
+
+app.use(
+  cors({
+    origin: "*", 
+  })
+);
 app.use(express.json({ limit: "10mb" }));
 
 const incidentRoutes = require("./routes/incidentsRoutes");
@@ -36,7 +41,7 @@ const { initSocket } = require("./sockets/socketServer");
 initSocket(server);
 
 app.post("/detect", upload.single("file"), async (req, res) => {
-  console.log("✅ detect route hit");
+  console.log("detect route hit");
 
   try {
     const file = req.file;
@@ -45,15 +50,13 @@ app.post("/detect", upload.single("file"), async (req, res) => {
       return res.status(400).json({ error: "No file received" });
     }
 
-    
     const formData = new FormData();
     formData.append("file", file.buffer, {
       filename: "frame.jpg",
       contentType: "image/jpeg",
     });
 
-    
-    const response = await fetch("http://localhost:8000/detect/frame", {
+    const response = await fetch(`${ML_URL}/detect/frame`, {
       method: "POST",
       body: formData,
       headers: formData.getHeaders(),
@@ -61,12 +64,12 @@ app.post("/detect", upload.single("file"), async (req, res) => {
 
     const data = await response.json();
 
-    console.log("🔥 ML Response:", data);
+    console.log("ML Response:", data);
 
     res.json(data);
 
   } catch (err) {
-    console.error("❌ Backend error:", err);
+    console.error("Backend error:", err);
     res.status(500).json({ error: "Detection failed" });
   }
 });
