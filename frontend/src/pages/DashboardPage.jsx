@@ -9,6 +9,7 @@ import MapView from "../components/Dashboard/MapView";
 import { useIncidentStore } from "../store/incidentStore";
 import { getIncidents } from "../api/incidents";
 import useSocket from "../hooks/useSocket";
+import GoogleMapView from "../components/Dashboard/GooglemapView";
 
 export default function DashboardPage() {
   const [incidents, setIncidents] = useState([]);
@@ -135,8 +136,11 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-
-          <MapView />
+        <div className="flex flex-col gap-4">
+          <MapView/>
+          <GoogleMapView incidents={incidents} />
+        </div>
+            
         </div>
 
         <div className="col-span-1 lg:col-span-3 flex flex-col gap-4">
