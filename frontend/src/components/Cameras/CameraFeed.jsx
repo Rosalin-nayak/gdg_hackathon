@@ -1,32 +1,26 @@
 import React, { useEffect, useRef } from "react";
 import { useIncidentStore } from "../../store/incidentStore";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
 
 export default function CameraFeed() {
   const { activeCamera, setActiveCamera } = useIncidentStore();
-
-  // ✅ FIX: get setAlerts at top level (hook safe)
   const setAlerts = useIncidentStore((state) => state.setAlerts);
-
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
-  // 🎥 Start camera
   useEffect(() => {
     if (!activeCamera) return;
 
     navigator.mediaDevices
       .getUserMedia({ video: true })
       .then((stream) => {
-        console.log("✅ Camera started");
-
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
       })
-      .catch((err) => console.error("❌ Camera error:", err));
+      .catch((err) => console.error(err));
   }, [activeCamera]);
 
-  // 🔥 Send frames to backend
   useEffect(() => {
     if (!activeCamera) return;
 
@@ -48,23 +42,18 @@ export default function CameraFeed() {
         formData.append("file", blob, "frame.jpg");
 
         try {
-          const res = await fetch("http://localhost:4000/detect", {
+          const res = await fetch(`${API_BASE_URL}/detect`, {
             method: "POST",
             body: formData,
           });
 
           const data = await res.json();
 
-          console.log("🔥 ML RESULT:", data);
-
-          // ✅ UPDATE ALERTS
           if (data.alerts && data.alerts.length > 0) {
-            console.log("🚨 ALERT RECEIVED:", data.alerts);
             setAlerts(data.alerts);
           }
-
         } catch (err) {
-          console.error("❌ ML error:", err);
+          console.error(err);
         }
       }, "image/jpeg");
     }, 3000);
@@ -104,7 +93,6 @@ export default function CameraFeed() {
         style={{ width: "80%", maxWidth: "600px" }}
       />
 
-      {/* Hidden canvas */}
       <canvas ref={canvasRef} style={{ display: "none" }} />
     </div>
   );

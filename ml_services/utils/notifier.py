@@ -1,8 +1,10 @@
+from dotenv import load_dotenv
+load_dotenv()
 import requests
 import os
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:4000/alerts")
-SERVICE_KEY = os.getenv("SERVICE_KEY")
+INTERNAL_SERVICE_KEY = os.getenv("INTERNAL_SERVICE_KEY")
 
 def send_alert(event: dict):
     try:
@@ -14,7 +16,7 @@ def send_alert(event: dict):
         }
 
         headers = {
-            "x-service-key": SERVICE_KEY
+            "x-service-key": INTERNAL_SERVICE_KEY
         }
 
         print("Sending payload:", payload)
