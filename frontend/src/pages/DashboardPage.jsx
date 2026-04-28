@@ -51,7 +51,7 @@ export default function DashboardPage() {
           </div>
           <div>
             <h1 className="text-lg sm:text-xl font-bold text-white tracking-wide">
-              Sentinel
+              SurviLens
             </h1>
             <p className="text-[9px] sm:text-[10px] text-slate-400 font-semibold tracking-widest uppercase hidden sm:block">
               AI-Powered Silent Distress Detection
