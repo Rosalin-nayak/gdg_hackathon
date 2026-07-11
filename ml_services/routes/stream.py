@@ -7,7 +7,7 @@ from detectors.behaviour import detect_behaviour
 from utils.notifier import send_alert
 
 try:
-    from detectors.gesture import detect_gesture
+    from gdg_hackathon.ml_services.detectors.gesture_detector import detect_gesture
 except:
     detect_gesture = None
 
