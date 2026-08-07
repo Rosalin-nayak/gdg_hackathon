@@ -46,7 +46,6 @@ const verifyIncident = (id) => {
     incident.verifiedAt = new Date();
     incident.updatedAt = new Date();
 
-    console.log("Incident Verified:", incident);
     emitUpdatedIncident(incident);
 
     return incident;
@@ -63,7 +62,6 @@ const resolveIncident = (id) => {
     incident.resolvedAt = new Date();
     incident.updatedAt = new Date();
 
-    console.log("Incident Resolved:", incident);
     emitUpdatedIncident(incident);
     return incident;
 };

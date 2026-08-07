@@ -10,7 +10,7 @@ export default function MapView() {
         <div className="panel-header !mb-0">Real-Time Response Map</div>
         <div className="text-[10px] text-green-400 font-bold flex items-center gap-1">
           <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-          2 responders active
+          {mapIncidents.length} active marker{mapIncidents.length === 1 ? "" : "s"}
         </div>
       </div>
       
@@ -38,14 +38,6 @@ export default function MapView() {
              <div className="absolute top-4 left-1/2 -translate-x-1/2 text-[8px] font-bold text-red-400 uppercase mt-1 whitespace-nowrap bg-slate-900/80 px-1 rounded">{incident.location}</div>
           </div>
         ))}
-
-        <div className="absolute top-[55%] left-[40%] -translate-x-1/2 -translate-y-1/2 bg-green-500 text-[8px] font-bold text-white px-1.5 py-0.5 rounded shadow z-10 flex items-center gap-1">
-          <div className="w-1 h-1 bg-white rounded-full"></div> A
-        </div>
-        
-        <div className="absolute bottom-[35%] left-[50%] -translate-x-1/2 -translate-y-1/2 bg-green-500 text-[8px] font-bold text-white px-1.5 py-0.5 rounded shadow z-10 flex items-center gap-1">
-          <div className="w-1 h-1 bg-white rounded-full"></div> B
-        </div>
       </div>
     </div>
   )

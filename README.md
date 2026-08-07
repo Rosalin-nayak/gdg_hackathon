@@ -7,6 +7,8 @@ SurviLens detects incidents from video frames and delivers live alerts to a dash
 
 Stack: computer vision (YOLO + detectors), FastAPI ML service, Node.js backend, Socket.IO, React dashboard.
 
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for an honest map of the live path vs experimental code.
+
 ---
 
 ## Key Features

@@ -1,13 +1,9 @@
 """
-SentinelPipeline — orchestrates all deep learning detectors.
+EXPERIMENTAL / NOT WIRED — reference design only.
 
-Detection stages:
-  1. Person detection       (YOLOv8)
-  2. Violence detection     (3D-CNN on frame buffer)
-  3. Fall / collapse        (MediaPipe Pose + angle classifier)
-  4. Chase / chasing        (DeepSORT tracker + trajectory analysis)
-  5. Hand SOS gesture       (MediaPipe Hands + MLP classifier)
-  6. Audio keyword "help"   (MFCC CNN — runs in separate thread)
+The live webcam path uses routes/detect.py, which loads detectors directly.
+This module sketches a unified pipeline API for a future refactor; it is not
+imported by main.py.
 """
 
 import logging
@@ -15,12 +11,12 @@ import numpy as np
 from typing import Dict, Any, List
 from collections import deque
 
-from violence_detector  import ViolenceDetector
-from fall_detector      import FallDetector
-from chase_detector     import ChaseDetector
-from gesture_detector   import GestureDetector
-from audio_detector     import AudioDetector
-from person_detector    import PersonDetector
+from detectors.violence_detector import ViolenceDetector
+from detectors.fall_detector import FallDetector
+from detectors.chase_detector import ChaseDetector
+from detectors.gesture_detector import GestureDetector
+from detectors.audio_detector import AudioDetector
+from detectors.person_detector import PersonDetector
 
 logger = logging.getLogger(__name__)
 

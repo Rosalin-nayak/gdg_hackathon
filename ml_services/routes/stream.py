@@ -1,3 +1,11 @@
+"""
+EXPERIMENTAL — not used by the primary webcam path.
+
+Primary production path: routes/detect.py (POST /detect/frame).
+This WebSocket stream endpoint is kept for future RTSP/edge work and is
+not mounted in main.py.
+"""
+
 from fastapi import APIRouter, WebSocket
 import numpy as np
 import cv2
@@ -6,23 +14,14 @@ from models.yolo_loader import YOLOModel
 from detectors.behaviour import detect_behaviour
 from utils.notifier import send_alert
 
-try:
-    from gdg_hackathon.ml_services.detectors.gesture_detector import detect_gesture
-except:
-    detect_gesture = None
-
-try:
-    from detectors.pose_fall import detect_fall_pose
-except:
-    detect_fall_pose = None
-
 router = APIRouter()
 yolo = YOLOModel()
 CAMERA_LOCATIONS = {
     "CAM_01": "Lobby",
     "CAM_02": "Entrance",
-    "CAM_03": "Parking"
+    "CAM_03": "Parking",
 }
+
 
 @router.websocket("/stream/{cam_id}")
 async def stream_endpoint(websocket: WebSocket, cam_id: str):
@@ -37,27 +36,13 @@ async def stream_endpoint(websocket: WebSocket, cam_id: str):
 
             if frame is None:
                 continue
+
             result = yolo.predict(frame)
+            alerts = list(set(detect_behaviour(result)))
 
-            behaviour_alerts = detect_behaviour(result)
-            gesture_alerts = []
-            if detect_gesture:
-                try:
-                    gesture_alerts = detect_gesture(frame)
-                except:
-                    gesture_alerts = []
-
-            pose_alerts = []
-            if detect_fall_pose:
-                try:
-                    pose_alerts = detect_fall_pose(frame)
-                except:
-                    pose_alerts = []
-
-            alerts = list(set(behaviour_alerts + gesture_alerts + pose_alerts))
             await websocket.send_json({
                 "cam_id": cam_id,
-                "alerts": alerts
+                "alerts": alerts,
             })
 
             for alert in alerts:
@@ -69,10 +54,9 @@ async def stream_endpoint(websocket: WebSocket, cam_id: str):
                     "detection_type": alert,
                     "confidence": 0.9,
                     "location": {
-                        "zone": CAMERA_LOCATIONS.get(cam_id, "Unknown")
-                    }
+                        "zone": CAMERA_LOCATIONS.get(cam_id, "Unknown"),
+                    },
                 })
-
                 last_sent[alert] = True
     except Exception as e:
         print("WebSocket closed:", e)

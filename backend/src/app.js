@@ -56,8 +56,6 @@ const { initSocket } = require("./sockets/socketServer");
 initSocket(server);
 
 app.post("/detect", upload.single("file"), async (req, res) => {
-  console.log("detect route hit");
-
   try {
     const file = req.file;
 
@@ -81,12 +79,9 @@ app.post("/detect", upload.single("file"), async (req, res) => {
     });
 
     const data = await response.json();
-
-    console.log("ML Response:", data);
-
     res.json(data);
   } catch (err) {
-    console.error("Backend error:", err);
+    console.error("Detect proxy failed:", err.message);
     res.status(500).json({ error: "Detection failed" });
   }
 });

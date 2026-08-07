@@ -8,6 +8,8 @@ import ResponderList from "../components/Responders/ResponderList";
 import MapView from "../components/Dashboard/MapView";
 import { useIncidentStore } from "../store/incidentStore";
 import { getIncidents } from "../api/incidents";
+import { getResponders } from "../api/responders";
+import { getCameras } from "../api/cameras";
 import useSocket from "../hooks/useSocket";
 import GoogleMapView from "../components/Dashboard/GooglemapView";
 
@@ -16,21 +18,28 @@ export default function DashboardPage() {
 
   const incidents = useIncidentStore((state) => state.incidents);
   const setIncidents = useIncidentStore((state) => state.setIncidents);
+  const setResponders = useIncidentStore((state) => state.setResponders);
+  const setCameraCount = useIncidentStore((state) => state.setCameraCount);
   const alerts = useIncidentStore((state) => state.alerts);
-  const { confidences, verifications, triggerManualSOS, pipelineActive } =
-    useIncidentStore();
+  const pipelineActive = useIncidentStore((state) => state.pipelineActive);
 
   useEffect(() => {
     getIncidents()
-      .then((res) => {
-        setIncidents(res.data.data || []);
-      })
+      .then((res) => setIncidents(res.data.data || []))
       .catch(() => {});
-  }, [setIncidents]);
+
+    getResponders()
+      .then((res) => setResponders(res.data.data || []))
+      .catch(() => setResponders([]));
+
+    getCameras()
+      .then((res) => setCameraCount((res.data.data || []).length))
+      .catch(() => setCameraCount(0));
+  }, [setIncidents, setResponders, setCameraCount]);
 
   const getNodeClass = (index, baseColor) => {
     if (index === pipelineActive)
-      return `border-${baseColor}-400 bg-${baseColor}-500/20 shadow-[0_0_15px_rgba(var(--${baseColor}-rgb),0.3)] scale-105`;
+      return `border-${baseColor}-400 bg-${baseColor}-500/20 scale-105`;
     if (index < pipelineActive)
       return `border-${baseColor}-500/50 bg-${baseColor}-500/10 opacity-70`;
     return "border-slate-700 bg-slate-800/30 opacity-50 grayscale";
@@ -48,23 +57,12 @@ export default function DashboardPage() {
               SurviLens
             </h1>
             <p className="text-[9px] sm:text-[10px] text-slate-400 font-semibold tracking-widest uppercase hidden sm:block">
-              AI-Powered Silent Distress Detection
+              Webcam demo · AI distress detection
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4 ml-auto">
-          <div className="hidden md:flex bg-[#141d2e] rounded-full p-1 border border-slate-700">
-            <button className="px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-slate-700/50 text-white text-xs sm:text-sm font-medium">
-              Overview
-            </button>
-            <button className="px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-slate-400 hover:text-white text-xs sm:text-sm font-medium transition-colors">
-              Analytics
-            </button>
-            <button className="px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-slate-400 hover:text-white text-xs sm:text-sm font-medium transition-colors">
-              Settings
-            </button>
-          </div>
           <div className="flex items-center gap-2 bg-[#112a1f] border border-green-800/50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full">
             <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-green-500"></div>
             <span className="text-green-400 text-[10px] sm:text-xs font-semibold uppercase tracking-wider whitespace-nowrap">
@@ -98,7 +96,7 @@ export default function DashboardPage() {
               >
                 <Shield size={18} />
                 <div className="text-xs font-bold text-white text-center">
-                  AI Distress
+                  Detect
                 </div>
               </div>
 
@@ -109,7 +107,7 @@ export default function DashboardPage() {
               >
                 <Activity size={18} />
                 <div className="text-xs font-bold text-white text-center">
-                  Silent SOS
+                  Alert
                 </div>
               </div>
 
@@ -120,7 +118,7 @@ export default function DashboardPage() {
               >
                 <Settings size={18} />
                 <div className="text-xs font-bold text-white text-center">
-                  Smart Verify
+                  Verify
                 </div>
               </div>
 
@@ -136,11 +134,11 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-        <div className="flex flex-col gap-4">
-          <MapView/>
-          <GoogleMapView incidents={incidents} />
-        </div>
-            
+
+          <div className="flex flex-col gap-4">
+            <MapView />
+            <GoogleMapView incidents={incidents} />
+          </div>
         </div>
 
         <div className="col-span-1 lg:col-span-3 flex flex-col gap-4">

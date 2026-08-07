@@ -1,0 +1,41 @@
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Env / secrets
+.env
+**/.env
+!.env.example
+!**/.env.example
+serviceAccountKey.json
+*.pem
+
+# Dependencies
+node_modules/
+**/node_modules/
+.venv/
+venv/
+env/
+**/__pycache__/
+*.pyc
+
+# Build / caches
+dist/
+build/
+.cache/
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# ML weights (download separately)
+**/*.pt
+ml_services/weights/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Local tooling
+.cursor/
