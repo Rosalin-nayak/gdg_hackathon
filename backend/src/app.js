@@ -1,4 +1,3 @@
-console.log("APP.JS LOADED");
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -13,10 +12,17 @@ const app = express();
 const server = http.createServer(app);
 
 const ML_URL = process.env.ML_URL || "http://localhost:8000";
+const SERVICE_KEY = process.env.INTERNAL_SERVICE_KEY;
+
+if (!SERVICE_KEY) {
+  console.warn(
+    "WARNING: INTERNAL_SERVICE_KEY is not set. /alerts will reject all requests until it is configured."
+  );
+}
 
 app.use(
   cors({
-    origin: "*", 
+    origin: "*",
   })
 );
 app.use(express.json({ limit: "10mb" }));
@@ -32,6 +38,15 @@ app.use("/responders", responderRoutes);
 
 const alertRoutes = require("./routes/alertsRoutes");
 app.use("/alerts", alertRoutes);
+
+app.get("/health", (req, res) => {
+  res.json({
+    status: "ok",
+    service: "backend",
+    mlUrl: ML_URL,
+    serviceKeyConfigured: Boolean(SERVICE_KEY),
+  });
+});
 
 app.get("/test", (req, res) => {
   res.json({ message: "Hello World!" });
@@ -70,7 +85,6 @@ app.post("/detect", upload.single("file"), async (req, res) => {
     console.log("ML Response:", data);
 
     res.json(data);
-
   } catch (err) {
     console.error("Backend error:", err);
     res.status(500).json({ error: "Detection failed" });

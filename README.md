@@ -1,193 +1,162 @@
-# 🚨 SurviLens  
-### AI-Powered Real-Time Surveillance & Incident Detection System  
+# SurviLens
+### AI-Powered Real-Time Surveillance & Incident Detection System
 
-SurviLens is an intelligent AI system that detects incidents from CCTV feeds in real-time and delivers instant alerts through a live dashboard.
+SurviLens detects incidents from video frames and delivers live alerts to a dashboard.
 
-It integrates computer vision (YOLO), FastAPI (ML services), Node.js backend, and Socket.IO to create a seamless event-driven pipeline from detection to user interface.
+**Current input:** browser webcam (demo). Real CCTV/RTSP is not wired yet.
 
----
-
-## 🧠 Key Features
-
-- Real-time CCTV frame processing  
-- AI-based incident detection (violence, crowding, fall)  
-- Live alerts using WebSockets  
-- Real-time dashboard updates  
-- Event-driven architecture  
-- Secure service-to-service communication  
+Stack: computer vision (YOLO + detectors), FastAPI ML service, Node.js backend, Socket.IO, React dashboard.
 
 ---
 
-## 🏗️ System Architecture
+## Key Features
 
-### High-Level Architecture
+- Webcam frame capture from the dashboard
+- AI-based incident detection (violence, fall, chase, SOS gesture, audio keyword)
+- Live alerts over WebSockets
+- Service-to-service auth via shared `INTERNAL_SERVICE_KEY`
+- Alert cooldown to reduce duplicate incidents
+
+---
+
+## System Architecture
 
 ```mermaid
 flowchart LR
-    A[Camera / Image Input] --> B[ML Service - FastAPI]
-    B --> C[YOLO Detection]
-    C --> D[Notifier]
-    D --> E[Backend - Node.js]
-    E --> F[Socket.IO]
+    A[Webcam / Frame Upload] --> B[Backend - Node.js]
+    B --> C[ML Service - FastAPI]
+    C --> D[Detectors]
+    D --> E[Notifier]
+    E --> B
+    B --> F[Socket.IO]
     F --> G[Frontend - React Dashboard]
 ```
 
 ---
 
-### Detailed Architecture
+## Security
 
-```mermaid
-flowchart TD
-    A[CCTV Feed / Image Upload]
-    B[FastAPI ML Service]
-    C[YOLO Model]
-    D[Detection Modules]
-    E[Notifier Service]
-    F[Backend API]
-    G[Incident Service]
-    H[Socket.IO Server]
-    I[Frontend Dashboard]
+ML → backend alerts require header `x-service-key` matching `INTERNAL_SERVICE_KEY` on both services.
 
-    A --> B
-    B --> C
-    C --> D
-    D --> E
-    E --> F
-    F --> G
-    G --> H
-    H --> I
-```
+- If the key is missing on the backend, `/alerts` returns `503`
+- If the key is wrong, `/alerts` returns `403`
+- Empty keys are never treated as valid
 
 ---
 
-## 🔄 System Flow
+## Getting Started
 
-### Detection Pipeline
+### 1. Environment files
 
-```mermaid
-sequenceDiagram
-    participant Camera
-    participant ML
-    participant Backend
-    participant Socket
-    participant UI
+Copy examples and use the **same** service key in backend and ML:
 
-    Camera->>ML: Send Frame/Image
-    ML->>ML: Run YOLO Detection
-    ML->>Backend: POST Alert
-    Backend->>Backend: Create Incident
-    Backend->>Socket: Emit Event
-    Socket->>UI: Real-Time Update
+```bash
+cp backend/.env.example backend/.env
+cp ml_services/.env.example ml_services/.env
+cp frontend/.env.example frontend/.env
 ```
 
----
+Minimum required:
 
-### Real-Time Streaming Flow
+| Variable | Where | Example |
+|----------|--------|---------|
+| `INTERNAL_SERVICE_KEY` | backend + ML | long shared secret |
+| `ML_URL` | backend | `http://localhost:8000` |
+| `BACKEND_URL` | ML | `http://localhost:4000/alerts` |
+| `VITE_API_BASE_URL` | frontend | `http://localhost:4000` |
+| `VITE_SOCKET_URL` | frontend | `http://localhost:4000` |
+| `VITE_GOOGLE_MAPS_API_KEY` | frontend | optional |
 
-```mermaid
-sequenceDiagram
-    participant Camera
-    participant ML
-    participant UI
-    participant Backend
+### 2. Backend
 
-    Camera->>ML: Stream Frames
-    ML->>ML: Detect Events
-    ML->>UI: Send Live Alerts
-    ML->>Backend: Notify (new alerts only)
-    Backend->>UI: Broadcast Updates
-```
-
----
-
-## 🔐 Security
-
-Internal communication between ML services and backend is secured using a service key.
-
-- ML sends requests with a secure header  
-- Backend validates incoming requests  
-- Prevents unauthorized alert injection  
-
----
-
-## 🚀 Getting Started
-
-### Backend
-```
-cd backend  
-npm install  
+```bash
+cd backend
+npm install
 npm run dev
-``` 
-### ML Service
 ```
-cd ml_services  
-pip install -r requirements.txt  
-uvicorn main:app --reload
-``` 
 
-### Frontend
+Health: `GET http://localhost:4000/health`
+
+### 3. ML Service
+
+```bash
+cd ml_services
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
 ```
-cd frontend  
-npm install  
+
+Health: `GET http://localhost:8000/health`
+
+### 4. Frontend
+
+```bash
+cd frontend
+npm install
 npm run dev
-```  
+```
+
+Open the Vite URL (usually `http://localhost:5173`), click a camera card, allow webcam access.
 
 ---
 
-## 🧪 Testing
+## Testing
 
-Trigger detection manually:
+### Health checks
 
-POST /detect/frame  
+```bash
+curl http://localhost:4000/health
+curl http://localhost:8000/health
+```
 
-Expected result:
-- Backend creates an incident  
-- Frontend updates instantly  
+### Manual alert (Socket.IO / dashboard)
 
----
+```bash
+curl -X POST http://localhost:4000/alerts \
+  -H "Content-Type: application/json" \
+  -H "x-service-key: change-me-to-a-long-secret" \
+  -d "{\"type\":\"fall\",\"cameraId\":\"CAM_01\",\"confidence\":0.95,\"location\":{\"zone\":\"Lobby\"}}"
+```
 
-## 🧠 Tech Stack
+Use the same key as in your `.env` files.
 
-- Frontend: React, Tailwind CSS, Vite  
-- Backend: Node.js, Express, Socket.IO  
-- ML Services: FastAPI, OpenCV, YOLO  
-- Communication: REST + WebSockets  
-- Architecture: Event-driven  
+### Webcam path
 
----
-
-## 🎯 Use Cases
-
-- Smart surveillance systems  
-- Public safety monitoring  
-- Campus / office security  
-- Real-time emergency detection  
-
----
-
-## 🚀 Future Enhancements
-
-- 📱 SMS/Call alert integration using Twilio  
-- 🔔 Push notifications using Firebase  
-- 👤 Role-based authentication and user management  
-- 🗺️ Real-time incident mapping (Google Maps integration)  
-- 🚓 Automated responder dispatch system  
-- 🧠 Improved ML models for higher accuracy  
-- 🗄️ Persistent database integration (MongoDB/PostgreSQL)  
-- 📊 Advanced analytics dashboard (trends, heatmaps)  
+1. Start ML, backend, and frontend
+2. Open dashboard → select `CAM_01`
+3. Allow camera permission
+4. Frames post to backend `/detect` → ML `/detect/frame` every ~3s
+5. New incidents appear live when detectors fire (and after cooldown)
 
 ---
 
-## 📌 Conclusion
+## Tech Stack
 
-SurviLens connects:
-
-Computer Vision → Backend Systems → Real-Time User Interface  
-
-It is designed to be scalable, modular, and ready for real-world deployment.
+- Frontend: React, Tailwind CSS, Vite, Socket.IO client
+- Backend: Node.js, Express, Socket.IO
+- ML: FastAPI, OpenCV, YOLO, MediaPipe
+- Data: in-memory for now (no database yet)
 
 ---
 
-## 👨‍💻 Author
+## Use Cases
 
-Developed as a hackathon project focused on AI-driven real-time systems and full-stack integration.
+- Campus / office security demos
+- Public safety prototypes
+- Hackathon / PoC surveillance dashboards
+
+---
+
+## Roadmap (not done yet)
+
+- Persistent database (MongoDB/PostgreSQL)
+- Auth and role-based access
+- SMS/Call (Twilio) and push (Firebase)
+- RTSP / real CCTV ingestion
+- Docker Compose deployment
+- Analytics dashboard
+
+---
+
+## Author
+
+Hackathon prototype focused on AI-driven real-time systems and full-stack integration. Moving toward production readiness step by step.

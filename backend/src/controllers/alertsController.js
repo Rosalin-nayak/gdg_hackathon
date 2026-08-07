@@ -2,12 +2,22 @@ const incidentService = require('../services/incidentService');
 
 const createAlert = (req, res) => {
     try {
-        if (req.headers['x-service-key'] !== process.env.INTERNAL_SERVICE_KEY) {
-            return res.status(403).json({
+        const serviceKey = process.env.INTERNAL_SERVICE_KEY;
+
+        if (!serviceKey) {
+            return res.status(503).json({
                 success: false,
-                message: "Unauthorized"
+                message: "Server misconfigured: INTERNAL_SERVICE_KEY is not set",
             });
         }
+
+        if (req.headers['x-service-key'] !== serviceKey) {
+            return res.status(403).json({
+                success: false,
+                message: "Unauthorized",
+            });
+        }
+
         const { type, location, cameraId, confidence } = req.body;
         if (!cameraId) {
             throw new Error("Camera ID required");
@@ -21,20 +31,19 @@ const createAlert = (req, res) => {
             type,
             cameraId,
             confidence,
-            location
+            location,
         });
 
         res.status(201).json({
             success: true,
-            data: incident
+            data: incident,
         });
-
     } catch (error) {
         res.status(400).json({
             success: false,
-            message: error.message
+            message: error.message,
         });
     }
 };
 
-module.exports = {createAlert};
+module.exports = { createAlert };

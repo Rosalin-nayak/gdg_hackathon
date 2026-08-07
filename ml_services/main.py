@@ -1,11 +1,27 @@
 from fastapi import FastAPI
-from routes import detect,stream
+import os
+from dotenv import load_dotenv
+
+from routes import detect, stream
+
+load_dotenv()
 
 app = FastAPI(title="ML Emergency Detection Service")
 
 app.include_router(detect.router)
 app.include_router(stream.router)
 
+
 @app.get("/")
 def root():
     return {"status": "ML Service running"}
+
+
+@app.get("/health")
+def health():
+    return {
+        "status": "ok",
+        "service": "ml",
+        "serviceKeyConfigured": bool(os.getenv("INTERNAL_SERVICE_KEY")),
+        "backendUrl": os.getenv("BACKEND_URL", "http://localhost:4000/alerts"),
+    }
