@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Shield, Activity, Settings, CheckCircle, Menu } from "lucide-react";
 import CameraGrid from "../components/Cameras/CameraGrid";
 import CameraFeed from "../components/Cameras/CameraFeed";
@@ -12,21 +12,21 @@ import useSocket from "../hooks/useSocket";
 import GoogleMapView from "../components/Dashboard/GooglemapView";
 
 export default function DashboardPage() {
-  const [incidents, setIncidents] = useState([]);
-
   useSocket();
+
+  const incidents = useIncidentStore((state) => state.incidents);
+  const setIncidents = useIncidentStore((state) => state.setIncidents);
+  const alerts = useIncidentStore((state) => state.alerts);
+  const { confidences, verifications, triggerManualSOS, pipelineActive } =
+    useIncidentStore();
 
   useEffect(() => {
     getIncidents()
       .then((res) => {
-        setIncidents(res.data.data);
+        setIncidents(res.data.data || []);
       })
       .catch(() => {});
-  }, []);
-
-  const { confidences, verifications, triggerManualSOS, pipelineActive } =
-    useIncidentStore();
-  const alerts = useIncidentStore((state) => state.alerts);
+  }, [setIncidents]);
 
   const getNodeClass = (index, baseColor) => {
     if (index === pipelineActive)

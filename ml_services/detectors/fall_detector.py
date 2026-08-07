@@ -37,8 +37,12 @@ class FallDetector:
                 min_tracking_confidence=0.5,
             )
             logger.info("FallDetector: MediaPipe Pose loaded.")
-        except ImportError:
-            logger.warning("FallDetector: mediapipe not installed — using bounding-box fallback.")
+        except Exception as e:
+            self.pose = None
+            logger.warning(
+                "FallDetector: MediaPipe Pose unavailable (%s) — using bounding-box fallback.",
+                e,
+            )
 
     def detect(self, frame: np.ndarray) -> Dict[str, Any]:
         if self.pose is None:

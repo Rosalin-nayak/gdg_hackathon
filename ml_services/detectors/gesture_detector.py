@@ -44,8 +44,13 @@ class GestureDetector:
                 min_tracking_confidence=0.5,
             )
             logger.info("GestureDetector: MediaPipe Hands loaded.")
-        except ImportError:
-            logger.warning("GestureDetector: mediapipe not installed — gesture detection disabled.")
+        except Exception as e:
+            self.hands = None
+            self.mp_hands = None
+            logger.warning(
+                "GestureDetector: MediaPipe Hands unavailable (%s) — gesture detection disabled.",
+                e,
+            )
 
     def detect(self, frame: np.ndarray) -> Dict[str, Any]:
         if self.hands is None:

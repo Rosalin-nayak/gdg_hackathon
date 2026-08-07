@@ -5,10 +5,9 @@ export default function CameraGrid() {
   const setActiveCamera = useIncidentStore((state) => state.setActiveCamera);
 
   const cameras = [
-    { id: "cam-01", name: "CAM-01", location: "Lobby", status: "Alert" },
-    { id: "cam-02", name: "CAM-02", location: "Parking", status: null },
-    { id: "cam-03", name: "CAM-03", location: "Exit", status: null },
-    { id: "cam-04", name: "CAM-04", location: "Stairway", status: null },
+    { id: "CAM_01", name: "CAM-01", location: "Lobby", status: null },
+    { id: "CAM_02", name: "CAM-02", location: "Entrance", status: null },
+    { id: "CAM_03", name: "CAM-03", location: "Parking", status: null },
   ];
 
   return (
@@ -20,7 +19,6 @@ export default function CameraGrid() {
           <button
             key={cam.id}
             onClick={() => {
-              console.log("CLICKED:", cam);
               setActiveCamera(cam);
             }}
             className="bg-black border border-slate-700 rounded p-4 text-white hover:border-blue-500 transition"

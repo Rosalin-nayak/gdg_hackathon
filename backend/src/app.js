@@ -50,11 +50,14 @@ app.post("/detect", upload.single("file"), async (req, res) => {
       return res.status(400).json({ error: "No file received" });
     }
 
+    const cameraId = req.body.cameraId || "CAM_01";
+
     const formData = new FormData();
     formData.append("file", file.buffer, {
       filename: "frame.jpg",
       contentType: "image/jpeg",
     });
+    formData.append("camera_id", cameraId);
 
     const response = await fetch(`${ML_URL}/detect/frame`, {
       method: "POST",

@@ -40,6 +40,7 @@ export default function CameraFeed() {
 
         const formData = new FormData();
         formData.append("file", blob, "frame.jpg");
+        formData.append("cameraId", activeCamera.id || "CAM_01");
 
         try {
           const res = await fetch(`${API_BASE_URL}/detect`, {
