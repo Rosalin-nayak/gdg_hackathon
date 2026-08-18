@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: survilens-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: survilens
+      POSTGRES_PASSWORD: survilens
+      POSTGRES_DB: survilens
+    ports:
+      - "5433:5432"
+    volumes:
+      - survilens_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U survilens -d survilens"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  survilens_pgdata:

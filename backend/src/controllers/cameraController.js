@@ -1,35 +1,18 @@
-const getCameras = (req, res) => {
-    const cameras = [
-        {
-            id: "CAM_01",
-            location: {
-                zone: "Lobby",
-                lat: null,
-                lng: null
-            }
-        },
-        {
-            id: "CAM_02",
-            location: {
-                zone: "Entrance",
-                lat: null,
-                lng: null
-            }
-        },
-        {
-            id: "CAM_03",
-            location: {
-                zone: "Parking",
-                lat: null,
-                lng: null
-            }
-        }
-    ];
+const cameraService = require("../services/cameraService");
 
+const getCameras = async (req, res) => {
+  try {
+    const cameras = await cameraService.getCameras();
     res.json({
-        success: true,
-        data: cameras
+      success: true,
+      data: cameras,
     });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
-module.exports = {getCameras};
+module.exports = { getCameras };

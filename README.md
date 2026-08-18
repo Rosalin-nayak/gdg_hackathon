@@ -18,6 +18,7 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for an honest map of the live path vs e
 - Live alerts over WebSockets
 - Service-to-service auth via shared `INTERNAL_SERVICE_KEY`
 - Alert cooldown to reduce duplicate incidents
+- Postgres persistence for incidents, cameras, and responders
 
 ---
 
@@ -63,13 +64,24 @@ Minimum required:
 | Variable | Where | Example |
 |----------|--------|---------|
 | `INTERNAL_SERVICE_KEY` | backend + ML | long shared secret |
+| `DATABASE_URL` | backend | `postgresql://survilens:survilens@127.0.0.1:5433/survilens` |
 | `ML_URL` | backend | `http://localhost:8000` |
 | `BACKEND_URL` | ML | `http://localhost:4000/alerts` |
 | `VITE_API_BASE_URL` | frontend | `http://localhost:4000` |
 | `VITE_SOCKET_URL` | frontend | `http://localhost:4000` |
 | `VITE_GOOGLE_MAPS_API_KEY` | frontend | optional |
 
-### 2. Backend
+### 2. Postgres
+
+From the repo root (Docker required). Uses host port **5433** (avoids clashing with a local Postgres on 5432):
+
+```bash
+docker compose up -d db
+```
+
+Schema + camera seed run automatically when the backend starts.
+
+### 3. Backend
 
 ```bash
 cd backend
@@ -77,9 +89,9 @@ npm install
 npm run dev
 ```
 
-Health: `GET http://localhost:4000/health`
+Health: `GET http://localhost:4000/health` (includes `"database":"up"`)
 
-### 3. ML Service
+### 4. ML Service
 
 ```bash
 cd ml_services
@@ -89,7 +101,7 @@ uvicorn main:app --reload --port 8000
 
 Health: `GET http://localhost:8000/health`
 
-### 4. Frontend
+### 5. Frontend
 
 ```bash
 cd frontend
@@ -119,11 +131,11 @@ curl -X POST http://localhost:4000/alerts \
   -d "{\"type\":\"fall\",\"cameraId\":\"CAM_01\",\"confidence\":0.95,\"location\":{\"zone\":\"Lobby\"}}"
 ```
 
-Use the same key as in your `.env` files.
+Use the same key as in your `.env` files. Restart the backend and confirm the incident is still listed via `GET /incidents`.
 
 ### Webcam path
 
-1. Start ML, backend, and frontend
+1. Start Postgres, ML, backend, and frontend
 2. Open dashboard → select `CAM_01`
 3. Allow camera permission
 4. Frames post to backend `/detect` → ML `/detect/frame` every ~3s
@@ -134,9 +146,9 @@ Use the same key as in your `.env` files.
 ## Tech Stack
 
 - Frontend: React, Tailwind CSS, Vite, Socket.IO client
-- Backend: Node.js, Express, Socket.IO
+- Backend: Node.js, Express, Socket.IO, PostgreSQL (`pg`)
 - ML: FastAPI, OpenCV, YOLO, MediaPipe
-- Data: in-memory for now (no database yet)
+- Data: Postgres (`incidents`, `cameras`, `responders`)
 
 ---
 
@@ -150,11 +162,10 @@ Use the same key as in your `.env` files.
 
 ## Roadmap (not done yet)
 
-- Persistent database (MongoDB/PostgreSQL)
 - Auth and role-based access
 - SMS/Call (Twilio) and push (Firebase)
 - RTSP / real CCTV ingestion
-- Docker Compose deployment
+- Full app Docker Compose (frontend + backend + ML + DB)
 - Analytics dashboard
 
 ---

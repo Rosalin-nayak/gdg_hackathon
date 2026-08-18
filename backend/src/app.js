@@ -6,6 +6,9 @@ const multer = require("multer");
 const fetch = require("node-fetch");
 const FormData = require("form-data");
 
+const { initDb } = require("./db/migrate");
+const { checkConnection } = require("./db/pool");
+
 const upload = multer();
 
 const app = express();
@@ -39,12 +42,20 @@ app.use("/responders", responderRoutes);
 const alertRoutes = require("./routes/alertsRoutes");
 app.use("/alerts", alertRoutes);
 
-app.get("/health", (req, res) => {
-  res.json({
-    status: "ok",
+app.get("/health", async (req, res) => {
+  let database = "down";
+  try {
+    database = (await checkConnection()) ? "up" : "down";
+  } catch {
+    database = "down";
+  }
+
+  res.status(database === "up" ? 200 : 503).json({
+    status: database === "up" ? "ok" : "degraded",
     service: "backend",
     mlUrl: ML_URL,
     serviceKeyConfigured: Boolean(SERVICE_KEY),
+    database,
   });
 });
 
@@ -88,6 +99,21 @@ app.post("/detect", upload.single("file"), async (req, res) => {
 
 const PORT = process.env.PORT || 4000;
 
-server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+const start = async () => {
+  try {
+    await initDb();
+    console.log("Postgres schema ready");
+  } catch (err) {
+    console.error("Failed to initialize Postgres:", err.message);
+    console.error(
+      "Start the database with: docker compose up -d db  (from repo root)"
+    );
+    process.exit(1);
+  }
+
+  server.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+};
+
+start();

@@ -1,78 +1,103 @@
-const dispatchService = require('../services/dispatchService');
-const { getIO } = require('../sockets/socketServer');
+const dispatchService = require("../services/dispatchService");
+const { getIO } = require("../sockets/socketServer");
 
-const createResponder = (req, res) => {
+const createResponder = async (req, res) => {
+  try {
     const { name, location } = req.body;
     if (!name || !location) {
-        return res.status(400).json({
-            success: false,
-            message: "name and location required"
-        });
+      return res.status(400).json({
+        success: false,
+        message: "name and location required",
+      });
     }
 
-    const responder = {
-        id: Date.now().toString(),
-        name,
-        status: "available",
-        location,
-        assignedIncident: null
-    };
-
-    const responders = dispatchService.getResponders();
-    responders.push(responder);
+    const responder = await dispatchService.createResponder({ name, location });
     res.status(201).json({
-        success: true,
-        data: responder
+      success: true,
+      data: responder,
     });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
-const getResponders = (req, res) => {
-    const responders = dispatchService.getResponders();
+const getResponders = async (req, res) => {
+  try {
+    const responders = await dispatchService.getResponders();
     res.json({
-        success: true,
-        data: responders
+      success: true,
+      data: responders,
     });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
-const updateResponderStatus = (req, res) => {
+const updateResponderStatus = async (req, res) => {
+  try {
     const { id } = req.params;
     const { status } = req.body;
-    const responders = dispatchService.getResponders();
-    const responder = responders.find(r => r.id === id);
+    const responder = await dispatchService.updateResponderStatus(id, status);
 
     if (!responder) {
-        return res.status(404).json({
-            success: false,
-            message: "Responder not found"
-        });
+      return res.status(404).json({
+        success: false,
+        message: "Responder not found",
+      });
     }
 
-    responder.status = status;
-
     res.json({
-        success: true,
-        data: responder
+      success: true,
+      data: responder,
     });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
-const updateResponderLocation = (req, res) => {
+const updateResponderLocation = async (req, res) => {
+  try {
     const { id } = req.params;
     const { location } = req.body;
-    const responder = dispatchService.updateResponderLocation(id, location);
+    const responder = await dispatchService.updateResponderLocation(
+      id,
+      location
+    );
+
     if (!responder) {
-        return res.status(404).json({
-            success: false,
-            message: "Responder not found"
-        });
+      return res.status(404).json({
+        success: false,
+        message: "Responder not found",
+      });
     }
 
     const io = getIO();
     io.emit("responder:updated", responder);
 
     res.json({
-        success: true,
-        data: responder
+      success: true,
+      data: responder,
     });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
-module.exports = {createResponder, getResponders, updateResponderStatus, updateResponderLocation};
+module.exports = {
+  createResponder,
+  getResponders,
+  updateResponderStatus,
+  updateResponderLocation,
+};
